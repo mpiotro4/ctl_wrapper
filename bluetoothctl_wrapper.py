@@ -197,24 +197,28 @@ class Bluetoothctl:
             return module
 
     def find_and_pair(self, mac_address, pin):
-        self.remove(mac_address)
-        print('Scanning...')
-        self.start_scan()
-        time.sleep(10)
-        self.stop_scan()
-        print('Scanning finished')
-        module = self.find(mac_address)
-        if(module == any):
-            return False
+        device_info = self.get_device_info(mac_address)
+        if 'Trusted: yes' in str(device_info) and 'Paired: yes' in str(device_info):
+            return True
         else:
-            print("pairing...")
-            self.pair_with_pin(mac_address, pin)
-            print("pairing done")
-            print("trusting...")
-            self.trust(mac_address)
-            print("device trusted")
-            device_info = self.get_device_info(mac_address)
-            if 'Trusted: yes' in str(device_info) and 'Paired: yes' in str(device_info):
-                return True
-            else:
+            self.remove(mac_address)
+            print('Scanning...')
+            self.start_scan()
+            time.sleep(10)
+            self.stop_scan()
+            print('Scanning finished')
+            module = self.find(mac_address)
+            if(module == any):
                 return False
+            else:
+                print("pairing...")
+                self.pair_with_pin(mac_address, pin)
+                print("pairing done")
+                print("trusting...")
+                self.trust(mac_address)
+                print("device trusted")
+                device_info = self.get_device_info(mac_address)
+                if 'Trusted: yes' in str(device_info) and 'Paired: yes' in str(device_info):
+                    return True
+                else:
+                    return False
