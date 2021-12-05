@@ -1,5 +1,6 @@
 # Based on ReachView code from Egor Fedorov (egor.fedorov@emlid.com)
 # Updated for Python 3.6.8 on a Raspberry  Pi
+from os import device_encoding
 import time
 import pexpect
 import subprocess
@@ -183,7 +184,7 @@ class Bluetoothctl:
             return res == 1
 
     def find(self, mac_address):
-        avaiable_devices = bt.get_available_devices()
+        avaiable_devices = self.get_available_devices()
         module = any
         try:
             module = next(item for item in avaiable_devices
@@ -209,13 +210,11 @@ class Bluetoothctl:
             print("pairing...")
             self.pair_with_pin(mac_address, pin)
             print("pairing done")
+            print("trusting...")
             self.trust(mac_address)
-            for i in self.get_device_info(mac_address):
-                print(i)
-
-
-bt = Bluetoothctl()
-mac_address = "00:20:12:08:B6:73"
-pin = '1234'
-bt.find_and_pair(mac_address, pin)
-print("Finished")
+            print("device trusted")
+            device_info = self.get_device_info(mac_address)
+            if 'Trusted: yes' in str(device_info) and 'Paired: yes' in str(device_info):
+                return True
+            else:
+                return False
